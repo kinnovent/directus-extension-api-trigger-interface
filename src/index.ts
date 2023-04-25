@@ -143,6 +143,54 @@ export default defineInterface({
 							},
 						},
 						{
+							field: 'successText',
+							name: 'SuccessText',
+							type: 'string',
+							schema: {
+								default_value: 'Request success!',
+							},
+							meta: {
+								interface: 'input',
+								width: 'half',
+							},
+						},
+						{
+							field: 'errorText',
+							name: 'ErrorText',
+							type: 'string',
+							schema: {
+								default_value: 'Request failed!',
+							},
+							meta: {
+								interface: 'input',
+								width: 'half',
+							},
+						},
+						{
+							field: 'loadingText',
+							name: 'LoadingText',
+							type: 'string',
+							schema: {
+								default_value: null,
+							},
+							meta: {
+								interface: 'input',
+								width: 'half',
+							},
+						},
+						{
+							field: 'dialog',
+							name: 'Dialog',
+							type: 'boolean',
+							schema: {
+								default_value: true,
+							},
+							meta: {
+								interface: 'boolean',
+								width: 'half',
+							},
+						},
+						{
 							field: 'disabledConditions',
 							name: 'Disabled Conditions',
 							type: 'json',
