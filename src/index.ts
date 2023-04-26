@@ -146,36 +146,39 @@ export default defineInterface({
 							field: 'successText',
 							name: 'SuccessText',
 							type: 'string',
-							schema: {
-								default_value: 'Request success!',
-							},
 							meta: {
 								interface: 'input',
 								width: 'half',
+								options: {
+									placeholder: 'Request success!',
+									font: 'monospace',
+								},
 							},
 						},
 						{
 							field: 'errorText',
 							name: 'ErrorText',
 							type: 'string',
-							schema: {
-								default_value: 'Request failed!',
-							},
 							meta: {
 								interface: 'input',
 								width: 'half',
+								options: {
+									placeholder: 'Request failed!',
+									font: 'monospace',
+								},
 							},
 						},
 						{
 							field: 'loadingText',
 							name: 'LoadingText',
 							type: 'string',
-							schema: {
-								default_value: null,
-							},
 							meta: {
 								interface: 'input',
 								width: 'half',
+								options: {
+									placeholder: 'Request is process please wait a minute!',
+									font: 'monospace',
+								},
 							},
 						},
 						{

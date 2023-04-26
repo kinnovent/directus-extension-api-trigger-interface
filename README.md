@@ -13,7 +13,7 @@ A [Directus](https://github.com/directus/directus) interface extension for trigg
 
 # Installation
 ```
-npm i directus-extension-api-trigger-interface
+npm i https://github.com/kinnovent/directus-extension-api-trigger-interface.git
 ```
 
 # Get Started
