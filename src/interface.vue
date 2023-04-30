@@ -12,7 +12,7 @@
       :disabled="disableds[index]"
       :secondary="trigger.type !== 'primary'"
       v-bind="{ [trigger.size]: true }"
-      @click="onClick(trigger.method, parsedUrls[index], index)"
+      @click="onClick({method:trigger.method, url:parsedUrls[index], params:trigger.params, updateField:trigger.updateField, index})"
     >
       <v-icon
         v-if="trigger.icon"
@@ -25,12 +25,22 @@
 </template>
   
   <script lang="ts">
-import { computed, defineComponent, inject, PropType, ref } from "vue";
+import {
+  computed,
+  defineComponent,
+  inject,
+  PropType,
+  ref,
+  ComputedRef,
+} from "vue";
 import { useRouter } from "vue-router";
-import { useApi, useStores } from "@directus/extensions-sdk";
+import { useApi, useStores, useCollection } from "@directus/extensions-sdk";
 import { Filter } from "@directus/shared/types";
 import { render } from "micromustache";
 import { checkConditions } from "./check-conditions";
+
+import { toRaw } from "@vue/reactivity";
+// import { json } from "express";
 
 type Trigger = {
   label: string;
@@ -38,7 +48,9 @@ type Trigger = {
   type: string;
   icon: string;
   url: string;
+  params: string; //请求参数
   method: string;
+  updateField: string; //需要更新的表单字段
   disabledConditions: Filter;
   successText: string;
   errorText: string;
@@ -57,14 +69,31 @@ export default defineComponent({
       type: String,
       default: "vertical",
     },
+    collection: {
+      type: String,
+      default: "",
+    },
+    field: {
+      type: String,
+      default: null,
+    },
+    primaryKey: {
+      type: [String, Number],
+      default: "",
+    },
   },
-  setup(props) {
+  emits: ["input", "setFieldValue"],
+
+  setup(props, { emit }) {
+    const defaultValues = useCollection(props.collection).defaults;
+
     const api = useApi();
     const { useNotificationsStore } = useStores();
     const store = useNotificationsStore();
     const router = useRouter();
 
     const values = inject("values", ref<Record<string, any>>({}));
+
     const parsedUrls = computed(() =>
       props.triggers.map((trigger) => render(trigger.url ?? "", values.value))
     );
@@ -80,9 +109,28 @@ export default defineComponent({
 
     return { loadings, parsedUrls, disableds, onClick };
 
-    async function onClick(method: string, url: string, index: number) {
+    async function onClick({ method, url, params, updateField, index }) {
       const loading = loadings[index];
       if (!loading) return;
+      let newParams = {};
+      if (params) {
+        // 表单校验
+        const defaultValuesObject = toRaw(defaultValues.value);
+        const newObject = Object.assign({}, defaultValuesObject, values.value);
+        console.log(params, newObject);
+        params.split(",").forEach((key) => {
+          newParams[key] = newObject[key] || null;
+        });
+
+        if (Object.values(newParams).some((item) => !item)) {
+          return store.add({
+            title: "表单存在空值，请填写完整再尝试！",
+            type: "error",
+            dialog: props.triggers[index]?.dialog,
+          });
+        }
+      }
+      // 加载提示
       loading.value = true;
       let loadingStore;
       if (props.triggers[index]?.loadingText) {
@@ -92,28 +140,43 @@ export default defineComponent({
           dialog: props.triggers[index]?.dialog,
         });
       }
+      // 发起请求
       try {
-        await api.request({
-          method,
-          url,
-        });
+        const config =
+          method === "GET"
+            ? { method, url, params: newParams }
+            : { method, url, data: newParams };
+        const { data } = await api.request(config);
+        // 更新表单
+        console.log("updateField",updateField)
+        if (updateField) {
+          updateField.split(",").forEach((key: string) => {
+            console.log("key",key,data[key])
+            setTimeout(() => {
+              emit("setFieldValue", { field: key, value: data[key] });
+            }, 1);
+          });
+        }
         if (loadingStore) {
-          store.hide(loadingStore);
+          store.remove(loadingStore);
         }
         if (props.triggers[index]?.reload) {
           router.go(0);
         } else {
           store.add({
-            title: props.triggers[index]?.successText,
+            title: props.triggers[index]?.successText||'Success!',
             type: "success",
             dialog: props.triggers[index]?.dialog,
           });
         }
       } catch (error: any) {
+        if (loadingStore) {
+          store.remove(loadingStore);
+        }
         const message =
           error.response?.data?.errors?.[0]?.message ||
           error.message ||
-          undefined;
+          'Error!';
         store.add({
           title: "Error",
           text: props.triggers[index]?.errorText || message,

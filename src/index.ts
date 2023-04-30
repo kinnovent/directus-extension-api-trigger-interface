@@ -107,6 +107,23 @@ export default defineInterface({
 							meta: {
 								width: 'full',
 								interface: 'input',
+								options: {
+									placeholder: '/exchange/orders/{{id}}',
+									font: 'monospace',
+								},
+							},
+						},
+						{
+							field: 'params',
+							name: 'Params',
+							type: 'string',
+							meta: {
+								width: 'full',
+								interface: 'input',
+								options: {
+									placeholder: 'buy,from,amount',
+									font: 'monospace',
+								},
 							},
 						},
 						{
@@ -127,6 +144,19 @@ export default defineInterface({
 										{ text: 'PATCH', value: 'PATCH' },
 										{ text: 'DELETE', value: 'DELETE' },
 									],
+								},
+							},
+						},
+						{
+							field: 'updateField',
+							name: 'UpdateField',
+							type: 'string',
+							meta: {
+								width: 'full',
+								interface: 'input',
+								options: {
+									placeholder: 'buy,from,amount',
+									font: 'monospace',
 								},
 							},
 						},
@@ -176,7 +206,7 @@ export default defineInterface({
 								interface: 'input',
 								width: 'half',
 								options: {
-									placeholder: 'Request is process please wait a minute!',
+									placeholder: 'Request is process!',
 									font: 'monospace',
 								},
 							},
